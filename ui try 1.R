@@ -18,31 +18,26 @@ data %<>% select(id_f,id_t,is_suspiscius)
 
 nodes[-1] <- lapply(nodes[-1], gsub, pattern = ".", replacement = " ", fixed = TRUE)
 nodes[,2] <- capitalize(nodes[,2])
-data$color <- ifelse(edgeges$is_s == 1,"red","lightblue") 
+data$color <- ifelse(data$is_suspiscius == 1,"red","lightblue") 
 
 # SHINY APP ---------------------------------------------------------------
+ui <- fluidPage(
 
-  ui <- fluidPage(
-  visNetworkOutput("network_proxy_nodes")
+     mainPanel(visNetworkOutput("network_proxy_nodes"))
+   
 )
-
 
 server <- function(input, output, session) {
   
   output$network_proxy_nodes <- renderVisNetwork({
     
-    nododos <- data.frame(id = nodes$id,
-                          label = nodes$nodos)
+    nododos <- data.frame(id = as.integer(nodes$id),
+                          label = nodes$nodos) 
     edgeges <- data.frame(from = data$id_f, to = data$id_t, is_s = data$is_suspiscius, color = data$color)
-    visNetwork(nododos, edgeges) %>%
-      visNodes(color = list(background = "lightblue", highlight = 'pink')) %>%
-      visEvents(click="function(nodes){
-                Shiny.onInputChange('current_node_id',
-                nodes);
-  }"
-                  ) 
-  })
-  
+    visNetwork(nododos, edgeges,main = "Social Network Bank", width = "100%") %>%
+      visNodes(color = list(background = "lightblue", highlight = 'pink')) %>% visOptions(highlightNearest = T,nodesIdSelection = T, manipulation = T)
+    })
+
 }
 
 shinyApp(ui=ui, server =server)
